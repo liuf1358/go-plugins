@@ -9,8 +9,8 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/google/uuid"
 	"github.com/micro/go-micro/v2/broker"
-	"github.com/micro/go-micro/v2/codec/json"
 	"github.com/micro/go-micro/v2/cmd"
+	"github.com/micro/go-micro/v2/codec/json"
 	log "github.com/micro/go-micro/v2/logger"
 )
 
@@ -178,10 +178,21 @@ func (k *kBroker) Publish(topic string, msg *broker.Message, opts ...broker.Publ
 		return err
 	}
 
-	_, _, err = k.p.SendMessage(&sarama.ProducerMessage{
+	opt := broker.PublishOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	spm := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(b),
-	})
+	}
+
+	if key, ok := opt.Context.Value(topicKey{}).(string); ok {
+		spm.Key = sarama.StringEncoder(key)
+	}
+
+	_, _, err = k.p.SendMessage(spm)
 
 	return err
 }

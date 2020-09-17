@@ -37,6 +37,12 @@ func SubscribeConfig(c *sarama.Config) broker.SubscribeOption {
 	return setSubscribeOption(subscribeConfigKey{}, c)
 }
 
+type topicKey struct{}
+
+func TopicKey(key string) broker.PublishOption {
+	return setPublishOption(topicKey{}, key)
+}
+
 // consumerGroupHandler is the implementation of sarama.ConsumerGroupHandler
 type consumerGroupHandler struct {
 	handler broker.Handler
